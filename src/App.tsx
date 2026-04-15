@@ -1,6 +1,7 @@
 //@ts-nocheck
 import { useState, useEffect, useRef } from ‘react’;
 
+
 const TRANSACTIONS = [
 { id: 1, type: ‘pay’, name: ‘さくら食堂’, amount: -850, date: ‘04/08 12:30’, icon: ‘🍱’ },
 { id: 2, type: ‘charge’, name: ‘チャージ’, amount: +3000, date: ‘04/07 10:00’, icon: ‘⚡’ },
