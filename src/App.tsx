@@ -473,3 +473,4 @@ onPay={(amount) => setBalance(b => b - amount)}
 
 );
 }
+  
