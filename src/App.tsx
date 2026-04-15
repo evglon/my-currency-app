@@ -134,7 +134,7 @@ width: '100%', maxWidth: 430, padding: '20px 24px 40px',
 }}>
 <div style={{ width: 40, height: 4, background: '#ddd', borderRadius: 2, margin: '0 auto 20px' }} />
 
-```
+  
 {step === 'input' && (
 <>
 <h2 style={{ fontSize: 18, fontWeight: 700, marginBottom: 20, textAlign: 'center', color: '#1a1a2e' }}>支払い金額を入力</h2>
@@ -216,7 +216,6 @@ fontSize: 16, fontWeight: 700, cursor: 'pointer',
 )}
 </div>
 </div>
-```
 
 );
 }
@@ -233,7 +232,6 @@ return (
 <span>📶 🔋</span>
 </div>
 
-```
 <div style={{ background: '#0f3460', padding: '12px 20px 24px', color: '#fff' }}>
 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
 <div>
@@ -303,7 +301,6 @@ onPay={(amount) => setBalance(b => b - amount)}
 />
 )}
 </div>
-```
 
 );
 }
