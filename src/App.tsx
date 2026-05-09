@@ -273,7 +273,11 @@ onClick={e => e.target === e.currentTarget && onClose()}>
 }
 
 // ===== HOME SCREEN =====
-function HomeScreen({ balance, onPay, onCharge }) {
+function HomeScreen({ balance, onPay, onCharge, isNewUser }) {
+const newUserTransactions = [
+{ id: 1, type: 'charge', name: '新規登録特典', amount: +500, date: '本日', icon: '🎁' },
+];
+const transactions = isNewUser ? newUserTransactions : TRANSACTIONS;
 return (
 <div style={{ padding: '16px 16px 100px' }}>
 {/* Balance Card */}
@@ -327,8 +331,8 @@ return (
     <span style={{ fontSize: 12, color: C.primary, cursor: 'pointer', fontFamily: 'sans-serif' }}>すべて見る</span>
   </div>
   <div style={{ background: C.white, borderRadius: 20, overflow: 'hidden', boxShadow: '0 2px 16px rgba(0,0,0,0.05)' }}>
-    {TRANSACTIONS.map((tx, i) => (
-      <div key={tx.id} style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', borderBottom: i < TRANSACTIONS.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+    {transactions.map((tx, i) => (
+      <div key={tx.id} style={{ display: 'flex', alignItems: 'center', padding: '14px 16px', borderBottom: i < transactions.length - 1 ? `1px solid ${C.border}` : 'none' }}>
         <div style={{ width: 40, height: 40, borderRadius: 12, background: tx.type === 'charge' ? '#e8f5e9' : '#fff8e1', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, marginRight: 12, flexShrink: 0 }}>{tx.icon}</div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 13, fontWeight: 600, color: C.text, fontFamily: 'sans-serif', marginBottom: 2 }}>{tx.name}</div>
@@ -604,7 +608,270 @@ return (
 }
 
 // ===== MAIN APP =====
+// ===== LOGIN SCREEN =====
+function LoginScreen({ onLogin, testUser }) {
+const [mode, setMode] = useState('login');
+const [step, setStep] = useState(1);
+const [error, setError] = useState('');
+const [form, setForm] = useState({
+name: '', phone: '', email: '', password: '',
+address: '', services: [],
+});
+
+const services = [
+{ id: 'lpgas', label: 'LPガス', icon: '🔥' },
+{ id: 'electric', label: '電力', icon: '⚡' },
+{ id: 'realestate', label: '不動産', icon: '🏘️' },
+{ id: 'super', label: '食品スーパー', icon: '🛒' },
+{ id: 'gas_stand', label: 'ガソリンスタンド', icon: '⛽' },
+{ id: 'reform', label: 'リフォーム', icon: '🏠' },
+{ id: 'cleaning', label: 'ハウスクリーニング', icon: '🧹' },
+{ id: 'housework', label: '家事支援', icon: '🏡' },
+{ id: 'funeral', label: '葬祭', icon: '🕊️' },
+];
+
+const toggleService = (id) => {
+setForm(f => ({
+...f,
+services: f.services.includes(id)
+? f.services.filter(s => s !== id)
+: [...f.services, id],
+}));
+};
+
+return (
+<div style={{ minHeight: '100vh', background: C.primary2, display: 'flex', flexDirection: 'column' }}>
+<style>{`* { box-sizing: border-box; margin: 0; padding: 0; } ::placeholder { color: rgba(255,255,255,0.3); }`}</style>
+
+  {/* Logo area */}
+  <div style={{ padding: '60px 32px 40px', textAlign: 'center' }}>
+    <div style={{ width: 80, height: 80, borderRadius: 24, background: 'linear-gradient(135deg, #40916c, #2d6a4f)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 20px', boxShadow: '0 8px 32px rgba(0,0,0,0.3)', fontSize: 40 }}>🌿</div>
+    <div style={{ color: C.accent, fontSize: 28, fontWeight: 700, letterSpacing: 4, marginBottom: 6 }}>YELLCA</div>
+    <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13 }}>エルカ　地域をつなぐ、暮らしを豊かに</div>
+  </div>
+
+  {/* Form area */}
+  <div style={{ flex: 1, background: C.bg, borderRadius: '28px 28px 0 0', padding: '28px 24px 40px', overflowY: 'auto' }}>
+
+    {/* Tab */}
+    <div style={{ display: 'flex', background: '#e8f5e9', borderRadius: 14, padding: 4, marginBottom: 24 }}>
+      {['login', 'register'].map(m => (
+        <button key={m} onClick={() => { setMode(m); setStep(1); }} style={{ flex: 1, padding: '10px 0', background: mode === m ? C.white : 'transparent', border: 'none', borderRadius: 10, fontSize: 14, fontWeight: mode === m ? 700 : 400, color: mode === m ? C.primary : C.textMuted, cursor: 'pointer' }}>
+          {m === 'login' ? 'ログイン' : '新規登録'}
+        </button>
+      ))}
+    </div>
+
+    {mode === 'login' && (
+      <>
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, color: C.textLight, fontWeight: 700, marginBottom: 6 }}>電話番号またはメールアドレス</div>
+          <input placeholder="090-0000-0000" value={form.phone} onChange={e => setForm(f => ({ ...f, phone: e.target.value }))} style={{ width: '100%', padding: '14px 16px', border: `1.5px solid ${C.border}`, borderRadius: 12, fontSize: 15, outline: 'none', background: C.white, color: C.text }} />
+        </div>
+        <div style={{ marginBottom: 24 }}>
+          <div style={{ fontSize: 12, color: C.textLight, fontWeight: 700, marginBottom: 6 }}>パスワード</div>
+          <input type="password" placeholder="••••••••" value={form.password} onChange={e => setForm(f => ({ ...f, password: e.target.value }))} style={{ width: '100%', padding: '14px 16px', border: `1.5px solid ${C.border}`, borderRadius: 12, fontSize: 15, outline: 'none', background: C.white, color: C.text }} />
+        </div>
+        <button onClick={() => {
+          if (form.phone === testUser.id && form.password === testUser.pass) {
+            setError('');
+            onLogin(testUser.name);
+          } else {
+            setError('IDまたはパスワードが正しくありません');
+          }
+        }} style={{ width: '100%', padding: '16px 0', background: C.primary, color: C.white, border: 'none', borderRadius: 14, fontSize: 16, fontWeight: 700, cursor: 'pointer', marginBottom: 14, boxShadow: '0 4px 16px rgba(45,106,79,0.3)' }}>ログイン</button>
+        {error && <div style={{ color: '#e53935', fontSize: 13, textAlign: 'center', marginBottom: 10 }}>{error}</div>}
+        <div style={{ textAlign: 'center', fontSize: 13, color: C.primary, cursor: 'pointer' }}>パスワードをお忘れの方</div>
+      </>
+    )}
+
+    {mode === 'register' && step === 1 && (
+      <>
+        <div style={{ fontSize: 13, color: C.textLight, marginBottom: 20, textAlign: 'center' }}>基本情報を入力してください</div>
+        {[
+          { label: 'お名前', key: 'name', placeholder: '山田 太郎' },
+          { label: '電話番号', key: 'phone', placeholder: '090-0000-0000' },
+          { label: 'メールアドレス', key: 'email', placeholder: 'example@email.com' },
+          { label: 'パスワード', key: 'password', placeholder: '8文字以上', type: 'password' },
+        ].map(f => (
+          <div key={f.key} style={{ marginBottom: 14 }}>
+            <div style={{ fontSize: 12, color: C.textLight, fontWeight: 700, marginBottom: 6 }}>{f.label}</div>
+            <input type={f.type || 'text'} placeholder={f.placeholder} value={form[f.key]} onChange={e => setForm(prev => ({ ...prev, [f.key]: e.target.value }))} style={{ width: '100%', padding: '13px 16px', border: `1.5px solid ${C.border}`, borderRadius: 12, fontSize: 14, outline: 'none', background: C.white, color: C.text }} />
+          </div>
+        ))}
+        <button onClick={() => setStep(2)} style={{ width: '100%', padding: '16px 0', background: C.primary, color: C.white, border: 'none', borderRadius: 14, fontSize: 16, fontWeight: 700, cursor: 'pointer', marginTop: 8, boxShadow: '0 4px 16px rgba(45,106,79,0.3)' }}>次へ</button>
+      </>
+    )}
+
+    {mode === 'register' && step === 2 && (
+      <>
+        <div style={{ fontSize: 13, color: C.textLight, marginBottom: 16, textAlign: 'center' }}>ご利用中のサービスを選択してください</div>
+        <div style={{ fontSize: 11, color: C.textMuted, marginBottom: 16, textAlign: 'center' }}>選択したサービスに合わせたお得な情報をお届けします</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 10, marginBottom: 24 }}>
+          {services.map(s => (
+            <div key={s.id} onClick={() => toggleService(s.id)} style={{ background: form.services.includes(s.id) ? '#e8f5e9' : C.white, border: `2px solid ${form.services.includes(s.id) ? C.primary : C.border}`, borderRadius: 14, padding: '12px 8px', textAlign: 'center', cursor: 'pointer', transition: 'all 0.15s' }}>
+              <div style={{ fontSize: 24, marginBottom: 4 }}>{s.icon}</div>
+              <div style={{ fontSize: 11, fontWeight: 600, color: form.services.includes(s.id) ? C.primary : C.textLight }}>{s.label}</div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={() => setStep(1)} style={{ flex: 1, padding: '14px 0', background: C.white, border: `1.5px solid ${C.border}`, borderRadius: 14, fontSize: 14, cursor: 'pointer', color: C.textLight }}>戻る</button>
+          <button onClick={() => setStep(3)} style={{ flex: 2, padding: '14px 0', background: C.primary, color: C.white, border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>次へ</button>
+        </div>
+      </>
+    )}
+
+    {mode === 'register' && step === 3 && (
+      <>
+        <div style={{ fontSize: 13, color: C.textLight, marginBottom: 6, textAlign: 'center' }}>あなたの価値観を教えてください</div>
+        <div style={{ fontSize: 11, color: C.textMuted, marginBottom: 16, textAlign: 'center' }}>あてはまるものをすべて選択してください</div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: 10, marginBottom: 24 }}>
+          {[
+            { id: 'cospa', label: 'コスパ重視', icon: '💰', desc: '価格・お得さを大切に' },
+            { id: 'timpa', label: 'タイパ重視', icon: '⏱️', desc: '時間効率を大切に' },
+            { id: 'sdgs', label: 'SDGs・環境', icon: '🌍', desc: '環境・社会貢献を意識' },
+            { id: 'local', label: '地産地消', icon: '🌾', desc: '地元の産品を応援' },
+            { id: 'health', label: '健康・安心', icon: '💪', desc: '健康・安全を最優先' },
+            { id: 'family', label: '家族・子育て', icon: '👨‍👩‍👧', desc: '家族の暮らしを大切に' },
+            { id: 'comfort', label: '快適・利便性', icon: '✨', desc: '便利で快適な生活' },
+            { id: 'community', label: '地域貢献', icon: '🤝', desc: '地域のつながりを大切に' },
+            { id: 'premium', label: 'プレミアム', icon: '👑', desc: '品質・ブランドを重視' },
+            { id: 'simple', label: 'シンプル', icon: '🍃', desc: 'シンプルな暮らし' },
+          ].map(v => (
+            <div key={v.id} onClick={() => setForm(f => ({ ...f, values: f.values ? (f.values.includes(v.id) ? f.values.filter(x => x !== v.id) : [...f.values, v.id]) : [v.id] }))} style={{ background: (form.values || []).includes(v.id) ? '#e8f5e9' : C.white, border: `2px solid ${(form.values || []).includes(v.id) ? C.primary : C.border}`, borderRadius: 14, padding: '12px', cursor: 'pointer', transition: 'all 0.15s' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span style={{ fontSize: 22 }}>{v.icon}</span>
+                <div>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: (form.values || []).includes(v.id) ? C.primary : C.text }}>{v.label}</div>
+                  <div style={{ fontSize: 10, color: C.textMuted }}>{v.desc}</div>
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ display: 'flex', gap: 10 }}>
+          <button onClick={() => setStep(2)} style={{ flex: 1, padding: '14px 0', background: C.white, border: `1.5px solid ${C.border}`, borderRadius: 14, fontSize: 14, cursor: 'pointer', color: C.textLight }}>戻る</button>
+          <button onClick={() => setStep(4)} style={{ flex: 2, padding: '14px 0', background: C.primary, color: C.white, border: 'none', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer' }}>次へ</button>
+        </div>
+      </>
+    )}
+
+    {mode === 'register' && step === 4 && (
+      <div style={{ textAlign: 'center', padding: '20px 0' }}>
+        <div style={{ fontSize: 64, marginBottom: 20 }}>🎉</div>
+        <h2 style={{ fontSize: 22, fontWeight: 700, color: C.text, marginBottom: 12 }}>登録完了！</h2>
+        <p style={{ color: C.textLight, fontSize: 14, lineHeight: 1.7, marginBottom: 8 }}>YELLCAへようこそ！</p>
+        <p style={{ color: C.textMuted, fontSize: 13, lineHeight: 1.7, marginBottom: 12 }}>新規登録特典として<br />500円分のYELLCAをプレゼント🎁</p>
+        <div style={{ background: '#e8f5e9', borderRadius: 14, padding: '14px 20px', marginBottom: 28, display: 'inline-block' }}>
+          <span style={{ color: C.primary, fontSize: 24, fontWeight: 700 }}>+500円</span>
+        </div>
+        <br />
+        <button onClick={() => onLogin(form.name || 'ゲスト', true)} style={{ width: '100%', padding: '16px 0', background: C.primary, color: C.white, border: 'none', borderRadius: 14, fontSize: 16, fontWeight: 700, cursor: 'pointer', boxShadow: '0 4px 16px rgba(45,106,79,0.3)' }}>
+          YELLCAをはじめる
+        </button>
+      </div>
+    )}
+  </div>
+</div>
+
+);
+}
+
+// ===== MYPAGE SCREEN =====
+function MyPageScreen({ onLogout }) {
+const profile = {
+name: '石原 ゆうや',
+phone: '090-1234-5678',
+email: 'yuya@example.com',
+address: '○○県○○市○○町1-2-3',
+services: ['LPガス', '食品スーパー', 'ガソリンスタンド'],
+joined: '2025年10月1日',
+totalPaid: 28400,
+transactions: 24,
+};
+
+const menuItems = [
+{ icon: '👤', label: 'プロフィール編集', sub: '名前・住所・連絡先' },
+{ icon: '🔔', label: '通知設定', sub: 'お知らせ・クーポン配信' },
+{ icon: '🔒', label: 'セキュリティ', sub: 'パスワード・生体認証' },
+{ icon: '🏢', label: 'ご利用サービス設定', sub: '契約中のサービス管理' },
+{ icon: '💳', label: '入金方法の管理', sub: 'クレカ・銀行口座' },
+{ icon: '📋', label: '利用規約', sub: '' },
+{ icon: '❓', label: 'よくある質問', sub: '' },
+{ icon: '📞', label: 'お問い合わせ', sub: 'チャット・電話サポート' },
+];
+
+return (
+<div style={{ padding: '16px 16px 100px' }}>
+{/* Profile card */}
+<div style={{ background: `linear-gradient(135deg, ${C.primary2}, ${C.primary})`, borderRadius: 20, padding: '20px', marginBottom: 16, position: 'relative', overflow: 'hidden' }}>
+<div style={{ position: 'absolute', top: -20, right: -20, width: 100, height: 100, borderRadius: '50%', background: 'rgba(149,213,178,0.1)' }} />
+<div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+<div style={{ width: 60, height: 60, borderRadius: '50%', background: 'linear-gradient(135deg, #40916c, #2d6a4f)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 28, border: '2px solid rgba(149,213,178,0.4)', flexShrink: 0 }}>🌸</div>
+<div>
+<div style={{ color: C.white, fontSize: 18, fontWeight: 700, marginBottom: 2 }}>{profile.name}</div>
+<div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 12 }}>{profile.email}</div>
+</div>
+</div>
+<div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 8 }}>
+{[
+{ label: '登録日', value: '2025/10/01' },
+{ label: '取引回数', value: `${profile.transactions}回` },
+{ label: '累計利用額', value: `¥${profile.totalPaid.toLocaleString()}` },
+].map(item => (
+<div key={item.label} style={{ background: 'rgba(255,255,255,0.1)', borderRadius: 10, padding: '10px 8px', textAlign: 'center' }}>
+<div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 10, marginBottom: 4 }}>{item.label}</div>
+<div style={{ color: C.white, fontSize: 13, fontWeight: 700 }}>{item.value}</div>
+</div>
+))}
+</div>
+</div>
+
+  {/* Services */}
+  <div style={{ background: C.white, borderRadius: 16, padding: 16, marginBottom: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.05)' }}>
+    <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 10 }}>ご利用中のサービス</div>
+    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+      {profile.services.map(s => (
+        <span key={s} style={{ background: '#e8f5e9', color: C.primary, fontSize: 12, padding: '5px 12px', borderRadius: 20, fontWeight: 600 }}>{s}</span>
+      ))}
+      <span style={{ background: '#f0f7f4', color: C.textMuted, fontSize: 12, padding: '5px 12px', borderRadius: 20, cursor: 'pointer' }}>+ 追加</span>
+    </div>
+  </div>
+
+  {/* Menu */}
+  <div style={{ background: C.white, borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', marginBottom: 16 }}>
+    {menuItems.map((item, i) => (
+      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px', borderBottom: i < menuItems.length - 1 ? `1px solid ${C.border}` : 'none', cursor: 'pointer' }}>
+        <div style={{ width: 36, height: 36, borderRadius: 10, background: '#f0f7f4', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, flexShrink: 0 }}>{item.icon}</div>
+        <div style={{ flex: 1 }}>
+          <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{item.label}</div>
+          {item.sub && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{item.sub}</div>}
+        </div>
+        <span style={{ color: C.textMuted, fontSize: 18 }}>›</span>
+      </div>
+    ))}
+  </div>
+
+  {/* Logout */}
+  <button onClick={onLogout} style={{ width: '100%', padding: '16px 0', background: C.white, color: '#e53935', border: '1.5px solid #ffcdd2', borderRadius: 14, fontSize: 15, fontWeight: 700, cursor: 'pointer', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
+    ログアウト
+  </button>
+
+  <div style={{ textAlign: 'center', marginTop: 16, color: C.textMuted, fontSize: 11 }}>
+    YELLCA ver 1.0.0　©2026 ISHIKAWAグループ
+  </div>
+</div>
+
+);
+}
+
+const TEST_USER = { id: '1234', pass: '1234', name: '石原 ゆうや' };
+
 export default function App() {
+const [isLoggedIn, setIsLoggedIn] = useState(false);
+const [userName, setUserName] = useState('石原 ゆうや');
+const [isNewUser, setIsNewUser] = useState(false);
 const [balance, setBalance] = useState(6150);
 const [showPay, setShowPay] = useState(false);
 const [showCharge, setShowCharge] = useState(false);
@@ -615,8 +882,19 @@ const tabs = [
 { id: 'coupon', icon: '🎁', label: 'クーポン' },
 { id: 'notice', icon: '📢', label: 'お知らせ' },
 { id: 'points', icon: '💎', label: 'ポイント' },
-{ id: 'benefits', icon: '🎀', label: '特典' },
+{ id: 'mypage', icon: '👤', label: 'マイページ' },
 ];
+
+const handleLogin = (name, newUser = false) => {
+if (name) setUserName(name);
+setIsNewUser(newUser);
+if (newUser) setBalance(500);
+setIsLoggedIn(true);
+};
+
+if (!isLoggedIn) {
+return <LoginScreen onLogin={handleLogin} testUser={TEST_USER} />;
+}
 
 return (
 <div style={{ maxWidth: 430, margin: '0 auto', minHeight: '100vh', background: C.bg, fontFamily: 'sans-serif', position: 'relative' }}>
@@ -632,18 +910,19 @@ return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
       <div>
         <div style={{ fontSize: 11, color: 'rgba(255,255,255,0.6)', marginBottom: 2 }}>こんにちは</div>
-        <div style={{ fontSize: 18, fontWeight: 700, color: C.white }}>石原 ゆうや さん</div>
+        <div style={{ fontSize: 18, fontWeight: 700, color: C.white }}>{userName} さん</div>
       </div>
       <div style={{ width: 44, height: 44, borderRadius: '50%', background: `linear-gradient(135deg, ${C.primary}, #40916c)`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 22, border: '2px solid rgba(149,213,178,0.4)' }}>🌸</div>
     </div>
   </div>
 
   {/* Content */}
-  {activeTab === 'home' && <HomeScreen balance={balance} onPay={() => setShowPay(true)} onCharge={() => setShowCharge(true)} />}
+  {activeTab === 'home' && <HomeScreen balance={balance} onPay={() => setShowPay(true)} onCharge={() => setShowCharge(true)} isNewUser={isNewUser} />}
   {activeTab === 'coupon' && <CouponScreen />}
   {activeTab === 'notice' && <NoticeScreen />}
   {activeTab === 'points' && <PointsScreen />}
   {activeTab === 'benefits' && <BenefitsScreen />}
+  {activeTab === 'mypage' && <MyPageScreen onLogout={() => setIsLoggedIn(false)} />}
 
   {/* Bottom Nav */}
   <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 430, background: C.white, borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-around', padding: '10px 0 20px', boxShadow: '0 -4px 20px rgba(0,0,0,0.06)' }}>
