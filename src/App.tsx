@@ -1,6 +1,17 @@
 // @ts-nocheck
 import { useState, useEffect, useRef } from 'react';
 
+// ===== localStorage SYNC =====
+const STORAGE_KEY_NOTICES = 'yellca_notices';
+const STORAGE_KEY_COUPONS = 'yellca_coupons';
+
+const loadFromStorage = (key, fallback) => {
+try {
+const d = localStorage.getItem(key);
+return d ? JSON.parse(d) : fallback;
+} catch(e) { return fallback; }
+};
+
 // ===== DATA =====
 const COUPONS = [
 { id: 1, shop: 'スーパー樋口', category: '食品スーパー', title: '200円引きクーポン', desc: '1,000円以上のお買い物で', discount: '200円OFF', expire: '5/31まで', icon: '🛒', color: '#2e7d32', reason: '食品スーパーをよく利用されています', used: false, saved: true, event: false },
@@ -121,7 +132,11 @@ return (
 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 100 }}
 onClick={e => e.target === e.currentTarget && onClose()}>
 <div style={{ background: C.bg, borderRadius: '28px 28px 0 0', width: '100%', maxWidth: 430, padding: '20px 24px 40px' }}>
-<div style={{ width: 40, height: 4, background: '#ccc', borderRadius: 2, margin: '0 auto 20px' }} />
+<div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
+<button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: C.textMuted, padding: 0, marginRight: 8 }}>‹</button>
+<div style={{ flex: 1, height: 4, background: '#ccc', borderRadius: 2, margin: '0 auto' }} />
+<button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: C.textMuted, padding: 0, marginLeft: 8 }}>×</button>
+</div>
 
     {step === 'input' && (
       <>
@@ -193,7 +208,11 @@ return (
 <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', backdropFilter: 'blur(4px)', display: 'flex', alignItems: 'flex-end', justifyContent: 'center', zIndex: 100 }}
 onClick={e => e.target === e.currentTarget && onClose()}>
 <div style={{ background: C.bg, borderRadius: '28px 28px 0 0', width: '100%', maxWidth: 430, padding: '20px 24px 40px', maxHeight: '85vh', overflowY: 'auto' }}>
-<div style={{ width: 40, height: 4, background: '#ccc', borderRadius: 2, margin: '0 auto 20px' }} />
+<div style={{ display: 'flex', alignItems: 'center', marginBottom: 20 }}>
+<button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 24, cursor: 'pointer', color: C.textMuted, padding: 0, marginRight: 8 }}>‹</button>
+<div style={{ flex: 1, height: 4, background: '#ccc', borderRadius: 2, margin: '0 auto' }} />
+<button onClick={onClose} style={{ background: 'none', border: 'none', fontSize: 18, cursor: 'pointer', color: C.textMuted, padding: 0, marginLeft: 8 }}>×</button>
+</div>
 
     {step === 'select' && (
       <>
@@ -354,6 +373,16 @@ function CouponScreen() {
 const [filter, setFilter] = useState('すべて');
 const [coupons, setCoupons] = useState(COUPONS);
 const [flipped, setFlipped] = useState(null);
+
+useEffect(() => {
+const stored = loadFromStorage(STORAGE_KEY_COUPONS, []);
+if (stored.length > 0) setCoupons([...stored, ...COUPONS]);
+const interval = setInterval(() => {
+const latest = loadFromStorage(STORAGE_KEY_COUPONS, []);
+if (latest.length > 0) setCoupons([...latest, ...COUPONS]);
+}, 2000);
+return () => clearInterval(interval);
+}, []);
 const categories = ['すべて', 'イベント', '食品スーパー', 'ガソリンスタンド', 'リフォーム', '電力小売'];
 
 const filtered = filter === 'すべて' ? coupons : coupons.filter(c => c.category === filter);
@@ -555,6 +584,19 @@ return (
 // ===== NOTICE SCREEN =====
 function NoticeScreen() {
 const [selected, setSelected] = useState(null);
+const [notices, setNotices] = useState(NOTICES);
+
+useEffect(() => {
+const stored = loadFromStorage(STORAGE_KEY_NOTICES, []);
+if (stored.length > 0) {
+setNotices([...stored, ...NOTICES]);
+}
+const interval = setInterval(() => {
+const latest = loadFromStorage(STORAGE_KEY_NOTICES, []);
+if (latest.length > 0) setNotices([...latest, ...NOTICES]);
+}, 2000);
+return () => clearInterval(interval);
+}, []);
 
 return (
 <div style={{ padding: '16px 16px 100px' }}>
@@ -579,13 +621,14 @@ return (
 
   {/* Notice list */}
   <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-    {NOTICES.map(notice => (
-      <div key={notice.id} onClick={() => setSelected(selected === notice.id ? null : notice.id)} style={{ background: C.white, borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', cursor: 'pointer' }}>
+    {notices.map(notice => (
+      <div key={notice.id} onClick={() => setSelected(selected === notice.id ? null : notice.id)} style={{ background: C.white, borderRadius: 16, overflow: 'hidden', boxShadow: '0 2px 12px rgba(0,0,0,0.05)', cursor: 'pointer', border: notice.isNew ? `2px solid ${C.primary}` : 'none' }}>
         <div style={{ padding: '14px 16px' }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: 12 }}>
             <div style={{ width: 40, height: 40, borderRadius: 12, background: `${notice.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 20, flexShrink: 0 }}>{notice.icon}</div>
             <div style={{ flex: 1, minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 4 }}>
+                {notice.isNew && <span style={{ background: C.primary, color: C.white, fontSize: 10, padding: '2px 8px', borderRadius: 10, fontWeight: 700, fontFamily: 'sans-serif' }}>NEW</span>}
                 <span style={{ background: `${notice.color}18`, color: notice.color, fontSize: 10, padding: '2px 8px', borderRadius: 10, fontWeight: 700, fontFamily: 'sans-serif' }}>{notice.tag}</span>
                 <span style={{ fontSize: 11, color: C.textMuted, fontFamily: 'sans-serif' }}>{notice.date}</span>
               </div>
@@ -869,8 +912,16 @@ return (
 const TEST_USER = { id: '1234', pass: '1234', name: '石原 ゆうや' };
 
 export default function App() {
-const [isLoggedIn, setIsLoggedIn] = useState(false);
-const [userName, setUserName] = useState('石原 ゆうや');
+return <UserApp />;
+}
+
+function UserApp() {
+const [isLoggedIn, setIsLoggedIn] = useState(() => {
+try { return localStorage.getItem('yellca_loggedin') === 'true'; } catch(e) { return false; }
+});
+const [userName, setUserName] = useState(() => {
+try { return localStorage.getItem('yellca_username') || '石原 ゆうや'; } catch(e) { return '石原 ゆうや'; }
+});
 const [isNewUser, setIsNewUser] = useState(false);
 const [balance, setBalance] = useState(6150);
 const [showPay, setShowPay] = useState(false);
@@ -886,10 +937,14 @@ const tabs = [
 ];
 
 const handleLogin = (name, newUser = false) => {
-if (name) setUserName(name);
+if (name) {
+setUserName(name);
+try { localStorage.setItem('yellca_username', name); } catch(e) {}
+}
 setIsNewUser(newUser);
 if (newUser) setBalance(500);
 setIsLoggedIn(true);
+try { localStorage.setItem('yellca_loggedin', 'true'); } catch(e) {}
 };
 
 if (!isLoggedIn) {
@@ -922,7 +977,7 @@ return (
   {activeTab === 'notice' && <NoticeScreen />}
   {activeTab === 'points' && <PointsScreen />}
   {activeTab === 'benefits' && <BenefitsScreen />}
-  {activeTab === 'mypage' && <MyPageScreen onLogout={() => setIsLoggedIn(false)} />}
+  {activeTab === 'mypage' && <MyPageScreen onLogout={() => { setIsLoggedIn(false); try { localStorage.removeItem('yellca_loggedin'); } catch(e) {} }} />}
 
   {/* Bottom Nav */}
   <div style={{ position: 'fixed', bottom: 0, left: '50%', transform: 'translateX(-50%)', width: '100%', maxWidth: 430, background: C.white, borderTop: `1px solid ${C.border}`, display: 'flex', justifyContent: 'space-around', padding: '10px 0 20px', boxShadow: '0 -4px 20px rgba(0,0,0,0.06)' }}>
