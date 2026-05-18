@@ -587,16 +587,17 @@ const [selected, setSelected] = useState(null);
 const [notices, setNotices] = useState(NOTICES);
 
 useEffect(() => {
-const stored = loadFromStorage(STORAGE_KEY_NOTICES, []);
-if (stored.length > 0) {
-setNotices([...stored, ...NOTICES]);
-}
-const interval = setInterval(() => {
-const latest = loadFromStorage(STORAGE_KEY_NOTICES, []);
-if (latest.length > 0) setNotices([...latest, ...NOTICES]);
-}, 2000);
-return () => clearInterval(interval);
-}, []);
+    fetch('http://18.183.91.57:3000/api/notices')
+      .then(res => res.json())
+      .then(data => {
+        if (data.length > 0) {
+          setNotices([...data, ...NOTICES]);
+        }
+      })
+      .catch(err => {
+        console.log('API接続失敗、ローカルデータを使用:', err);
+      });
+  }, []);
 
 return (
 <div style={{ padding: '16px 16px 100px' }}>
