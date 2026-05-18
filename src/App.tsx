@@ -587,7 +587,7 @@ const [selected, setSelected] = useState(null);
 const [notices, setNotices] = useState(NOTICES);
 
 useEffect(() => {
-    fetch('http://18.183.91.57:3000/api/notices')
+    fetch('https://13.158.252.245.nip.io/api/notices')
       .then(res => res.json())
       .then(data => {
         if (data.length > 0) {
